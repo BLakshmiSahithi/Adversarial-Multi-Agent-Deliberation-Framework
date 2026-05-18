@@ -4,9 +4,13 @@
 
 ## The Problem
 
-LLMs give confident answers with no internal challenge mechanism. A single model reasoning alone anchors early, never stress-tests its own assumptions, and produces outputs with no reasoning trail. In high-stakes domains — finance, medicine, law — a single perspective is institutionally unacceptable.
+Modern frontier LLMs can reason, reflect, and argue multiple sides of a question. But they do it inside a black box. The conclusion is visible. The process is not.
 
-This framework models what real decision committees do: opposing cases are formally argued, challenged, and rebutted before a decision is made. The debate log is the audit trail.
+In regulated environments like investment committees, credit decisioning, fraud adjudication, clinical review, the process is the requirement rather than what the AI concluded. What matters is how it got there, what evidence it weighed, which assumptions were challenged, and what the dissenting view was.
+
+A single model reasoning alone, however capable, cannot satisfy this. There is no independent challenger. No verified evidence trail. No documented record of what was argued and rebutted. No way to distinguish a well-reasoned conclusion from a confident-sounding hallucination.
+
+This framework makes the reasoning process external, structured, and verifiable — opposing agents with locked roles argue from independently verified evidence, a dedicated node catches and rejects hallucinated claims before they enter the record, and the full debate log serves as the audit trail. Not a smarter LLM. A trustworthy process built around one.
 
 ---
 
@@ -126,14 +130,14 @@ RECOMMENDED ACTION
 
 ## Engineering Challenges Solved
 
-### 🛡️ Hallucination Mitigation
+### Hallucination Mitigation
 Arguments are not accepted at face value. A dedicated Fact-Checker node
 verifies every citation against the intelligence brief before committing
 an argument to the debate log. Agents rewrite up to 2 times if citations
 are invalid. Arguments with repeated hallucinations are voided and penalised
 -50 points in calibration. This is an architectural guardrail, not a prompt.
 
-### 🔒 Role Integrity Under Adversarial Pressure
+### Role Integrity Under Adversarial Pressure
 LLMs default to balanced, helpful responses — which breaks the adversarial
 debate structure. Four techniques enforce role discipline simultaneously:
 identity anchoring in the system prompt, explicit prohibition of balancing
@@ -141,32 +145,32 @@ language, adversarial awareness injection (each agent must rebut the
 opponent's last argument specifically), and JSON output enforcement at the
 API level via `response_format`.
 
-### 📋 Explainability by Design
+### Explainability by Design
 Every claim in the final verdict traces back to a specific tagged observation
 in the debate log — `[Source: OBS_BULL_FCF]`, `[Source: QUANT_ALERT_BEAR]`.
 This is not post-hoc annotation. It is a structural property of the system.
 The debate log is the audit trail.
 
-### 📊 Verifiable Evaluation — No LLM Opinion
+### Verifiable Evaluation — No LLM Opinion
 Support score is computed deterministically by the Fact-Checker, not the LLM.
 Standard observation = 1 point. Anomaly flag = 3 points. Quantamental alert
 = 5 points. Invalid citation = -1 point. The side with the higher cumulative
 score wins the debate. Every number is reproducible and explainable.
 
-### 🧠 Quantamental Signal Validation
+### Quantamental Signal Validation
 Four independent data sources — historical momentum (Test A), peer comparison
 (Test B), live NLP sentiment via VADER (Test C), and earnings surprise momentum
 (Test D) — are computed without LLM involvement. A cross-signal alert
 `QUANT_ALERT` fires only when two independent sources corroborate the same
 conclusion, preventing noise from triggering false signals.
 
-### 📐 Context Management
+### Context Management
 The Judge receives lean argument summaries — key claims, verified citations,
 and support scores only. Scratchpads and full argument text are stripped before
 the Judge prompt is built. This prevents context overflow on long debates while
 preserving all information needed for a reasoned verdict.
 
-### 🔭 Production Observability
+### Production Observability
 LangSmith traces every node automatically — per-node latency, token usage,
 exact prompts sent, and raw outputs. The full execution graph is visible in
 the LangSmith dashboard for every run, making the system debuggable and
