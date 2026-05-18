@@ -124,6 +124,54 @@ RECOMMENDED ACTION
 
 ---
 
+## Engineering Challenges Solved
+
+### 🛡️ Hallucination Mitigation
+Arguments are not accepted at face value. A dedicated Fact-Checker node
+verifies every citation against the intelligence brief before committing
+an argument to the debate log. Agents rewrite up to 2 times if citations
+are invalid. Arguments with repeated hallucinations are voided and penalised
+-50 points in calibration. This is an architectural guardrail, not a prompt.
+
+### 🔒 Role Integrity Under Adversarial Pressure
+LLMs default to balanced, helpful responses — which breaks the adversarial
+debate structure. Four techniques enforce role discipline simultaneously:
+identity anchoring in the system prompt, explicit prohibition of balancing
+language, adversarial awareness injection (each agent must rebut the
+opponent's last argument specifically), and JSON output enforcement at the
+API level via `response_format`.
+
+### 📋 Explainability by Design
+Every claim in the final verdict traces back to a specific tagged observation
+in the debate log — `[Source: OBS_BULL_FCF]`, `[Source: QUANT_ALERT_BEAR]`.
+This is not post-hoc annotation. It is a structural property of the system.
+The debate log is the audit trail.
+
+### 📊 Verifiable Evaluation — No LLM Opinion
+Support score is computed deterministically by the Fact-Checker, not the LLM.
+Standard observation = 1 point. Anomaly flag = 3 points. Quantamental alert
+= 5 points. Invalid citation = -1 point. The side with the higher cumulative
+score wins the debate. Every number is reproducible and explainable.
+
+### 🧠 Quantamental Signal Validation
+Four independent data sources — historical momentum (Test A), peer comparison
+(Test B), live NLP sentiment via VADER (Test C), and earnings surprise momentum
+(Test D) — are computed without LLM involvement. A cross-signal alert
+`QUANT_ALERT` fires only when two independent sources corroborate the same
+conclusion, preventing noise from triggering false signals.
+
+### 📐 Context Management
+The Judge receives lean argument summaries — key claims, verified citations,
+and support scores only. Scratchpads and full argument text are stripped before
+the Judge prompt is built. This prevents context overflow on long debates while
+preserving all information needed for a reasoned verdict.
+
+### 🔭 Production Observability
+LangSmith traces every node automatically — per-node latency, token usage,
+exact prompts sent, and raw outputs. The full execution graph is visible in
+the LangSmith dashboard for every run, making the system debuggable and
+auditable at the infrastructure level.
+
 ## LangSmith Observability
 
 Every node traced automatically — per-node latency, token usage, exact prompts, raw outputs.
